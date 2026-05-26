@@ -412,6 +412,30 @@
     }
     .message-text strong { color: var(--orange); }
 
+    .cal-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border: 2px solid #81C784;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #2E7D32;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .cal-btn:hover {
+      background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+      transform: scale(1.02);
+      box-shadow: 0 4px 14px rgba(76,175,80,0.3);
+    }
+
     .close-btn {
       background: transparent;
       border: 2px solid var(--yellow);
@@ -563,6 +587,13 @@
           <div class="tag">⏰ 오전 10시 집합</div>
         </div>
 
+        <!-- 캘린더 추가 -->
+        <a class="cal-btn"
+           href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%82+%EC%9D%B4%EC%A4%80%EC%9D%B4+%EC%83%9D%EC%9D%BC%ED%8C%8C%ED%8B%B0&dates=20260530T010000Z%2F20260530T050000Z&details=10%3A00+%EB%B3%B4%EB%93%9C%EA%B2%8C%EC%9E%84+%ED%83%80%EC%9E%84+%28%EC%B2%AD%EB%85%84%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0%EC%84%BC%ED%84%B0%29%0A12%3A00+%EC%A0%90%EC%8B%AC+%EC%8B%9D%EC%82%AC%0A13%3A00+%EC%9B%90%ED%86%B5+%ED%83%90%ED%97%98+%EC%BD%94%EC%8A%A4&location=%EC%9B%90%ED%86%B5"
+           target="_blank" rel="noopener">
+          📅 Google 캘린더에 추가
+        </a>
+
         <!-- 메시지 -->
         <div class="message-box">
           <div class="message-heart">🧡</div>
@@ -578,10 +609,6 @@
   </div>
 </div>
 
-<!-- 숨겨진 오디오 -->
-<audio id="bgMusic" loop>
-  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-</audio>
 
 <script>
   /* ── 별 생성 ── */
@@ -619,25 +646,64 @@
     removeFloatEmojis();
   }
 
-  /* ── 뮤직 ── */
+  /* ── 뮤직 (Web Audio API - Happy Birthday 멜로디) ── */
   let musicPlaying = false;
-  const audio = document.getElementById('bgMusic');
+  let audioCtx = null;
+  let loopTimeout = null;
+  let activeNodes = [];
+
+  const NOTE = { G4:392, A4:440, B4:494, C5:523, D5:587, E5:659, F5:698, G5:784 };
+  const BPM = 108;
+  const B = 60 / BPM; // 1박자 길이(초)
+
+  // Happy Birthday 멜로디: [음, 박자]
+  const MELODY = [
+    ['G4',.75],['G4',.25],['A4',1],['G4',1],['C5',1],['B4',2],
+    ['G4',.75],['G4',.25],['A4',1],['G4',1],['D5',1],['C5',2],
+    ['G4',.75],['G4',.25],['G5',1],['E5',1],['C5',1],['B4',1],['A4',2],
+    ['F5',.75],['F5',.25],['E5',1],['C5',1],['D5',1],['C5',2],
+  ];
+
+  function playMelody() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    activeNodes = [];
+    let t = audioCtx.currentTime + 0.05;
+    MELODY.forEach(([note, beats]) => {
+      const dur = beats * B;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = NOTE[note];
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+      osc.start(t); osc.stop(t + dur);
+      activeNodes.push(osc);
+      t += dur;
+    });
+    const total = MELODY.reduce((s,[,b]) => s + b, 0) * B * 1000;
+    loopTimeout = setTimeout(() => { if (musicPlaying) playMelody(); }, total + 300);
+  }
+
+  function stopMelody() {
+    clearTimeout(loopTimeout);
+    activeNodes.forEach(n => { try { n.stop(); } catch(e){} });
+    activeNodes = [];
+  }
 
   function tryPlayMusic() {
-    audio.volume = 0.3;
-    audio.play().then(() => {
-      musicPlaying = true;
-      updateMusicUI();
-    }).catch(() => { /* 자동재생 차단 시 무시 */ });
+    musicPlaying = true;
+    playMelody();
+    updateMusicUI();
   }
 
   function toggleMusic() {
     if (musicPlaying) {
-      audio.pause();
+      stopMelody();
       musicPlaying = false;
     } else {
-      audio.play().catch(() => {});
       musicPlaying = true;
+      playMelody();
     }
     updateMusicUI();
   }
