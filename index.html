@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이준이 생일파티 초대장 🎂</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Gaegu:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #FFD600;
+      --yellow-light: #FFF9C4;
+      --yellow-mid: #FFE57F;
+      --orange: #FF8F00;
+      --pink: #FF6B9D;
+      --blue: #4FC3F7;
+      --green: #69F0AE;
+      --purple: #CE93D8;
+      --red: #FF5252;
+      --card-bg: #FFFDE7;
+      --card-border: #FFD600;
+      --shadow: 0 8px 40px rgba(255,214,0,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fff9f0 0%, #fff3cd 50%, #fff9f0 100%);
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── 파티클 배경 ── */
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    #confetti-canvas.active { opacity: 1; }
+
+    /* ── 별 배경 (닫힌 상태) ── */
+    .stars-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* ── 메인 래퍼 ── */
+    .wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ── 상단 타이틀 ── */
+    .page-title {
+      font-size: 13px;
+      color: #aaa;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+
+    /* ── 봉투 / 카드 컨테이너 ── */
+    .card-scene {
+      width: 100%;
+      perspective: 1200px;
+    }
+
+    .card-flip {
+      width: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-flip.open { transform: rotateY(180deg); }
+
+    .card-face {
+      width: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 28px;
+      border: 3px solid var(--card-border);
+      background: var(--card-bg);
+      box-shadow: var(--shadow), inset 0 0 0 6px #FFFDE7;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .card-back {
+      position: absolute;
+      top: 0; left: 0;
+      transform: rotateY(180deg);
+    }
+
+    /* ── 앞면 ── */
+    .front-emojis {
+      font-size: 36px;
+      display: flex;
+      gap: 10px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .front-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--orange);
+      text-align: center;
+      line-height: 1.4;
+    }
+    .front-title span { color: var(--pink); }
+
+    .front-hint {
+      font-size: 13px;
+      color: #bbb;
+      letter-spacing: 0.05em;
+    }
+
+    .open-btn {
+      background: linear-gradient(135deg, var(--yellow), #FFB300);
+      border: none;
+      border-radius: 50px;
+      padding: 14px 36px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,183,0,0.5);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .open-btn:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 8px 30px rgba(255,183,0,0.6);
+    }
+    .open-btn:active { transform: translateY(0) scale(0.98); }
+
+    .front-bottom-emojis {
+      font-size: 24px;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── 뒷면 (초대장 내용) ── */
+    .back-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .back-emojis {
+      font-size: 38px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .back-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--orange);
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .back-date-loc {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #888;
+      font-weight: 500;
+    }
+    .back-date-loc span { color: #555; font-weight: 700; }
+
+    /* ── 구분선 ── */
+    .divider {
+      width: 100%;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, var(--yellow-mid) 0px, var(--yellow-mid) 6px, transparent 6px, transparent 12px);
+      border-radius: 2px;
+    }
+
+    /* ── 사진 섹션 ── */
+    .photo-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-frame {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 5px solid var(--yellow);
+      box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--yellow-mid), 0 8px 24px rgba(255,214,0,0.3);
+      overflow: hidden;
+      background: #eee;
+      flex-shrink: 0;
+    }
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+    }
+
+    .photo-caption {
+      font-size: 13px;
+      color: #aaa;
+      font-weight: 500;
+    }
+
+    /* ── 뮤직 플레이어 ── */
+    .music-bar {
+      background: linear-gradient(135deg, #fff3cd, #ffe57f);
+      border: 2px solid var(--yellow);
+      border-radius: 50px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--orange);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s;
+      user-select: none;
+    }
+    .music-bar:hover { transform: scale(1.03); }
+    .music-bar .note { font-size: 16px; animation: noteFloat 1.5s ease-in-out infinite; }
+    @keyframes noteFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-4px) rotate(5deg); }
+    }
+    .music-label { flex: 1; }
+    .play-indicator {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 16px;
+    }
+    .play-indicator span {
+      display: block;
+      width: 3px;
+      background: var(--orange);
+      border-radius: 2px;
+      animation: equalizer var(--d2, 0.8s) ease-in-out infinite alternate var(--delay2, 0s);
+    }
+    @keyframes equalizer {
+      from { height: 4px; }
+      to { height: 14px; }
+    }
+    .play-indicator.paused span { animation-play-state: paused; }
+
+    /* ── 일정 섹션 ── */
+    .schedule-section {
+      width: 100%;
+    }
+    .section-label {
+      font-size: 13px;
+      color: #aaa;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--yellow), var(--yellow-mid), transparent);
+      border-radius: 2px;
+    }
+
+    .tl-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    .tl-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+    .tl-icon.game  { background: linear-gradient(135deg, #e1f5fe, #b3e5fc); }
+    .tl-icon.food  { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
+    .tl-icon.walk  { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+
+    .tl-content { flex: 1; padding-top: 4px; }
+    .tl-time {
+      font-size: 11px;
+      color: var(--orange);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+    .tl-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #333;
+      margin-bottom: 2px;
+    }
+    .tl-desc {
+      font-size: 12px;
+      color: #999;
+      line-height: 1.6;
+    }
+    .tl-desc b { color: var(--orange); }
+
+    /* ── 태그 ── */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .tag {
+      background: linear-gradient(135deg, #fff3cd, #ffe57f);
+      border: 1.5px solid var(--yellow);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--orange);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── 메시지 ── */
+    .message-box {
+      width: 100%;
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border-radius: 18px;
+      padding: 18px 20px;
+      text-align: center;
+      border: 2px dashed var(--yellow-mid);
+    }
+    .message-heart { font-size: 28px; margin-bottom: 6px; animation: heartbeat 1.5s ease-in-out infinite; }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.2); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.15); }
+      56% { transform: scale(1); }
+    }
+    .message-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #555;
+      line-height: 1.6;
+    }
+    .message-text strong { color: var(--orange); }
+
+    .cal-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border: 2px solid #81C784;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #2E7D32;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .cal-btn:hover {
+      background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+      transform: scale(1.02);
+      box-shadow: 0 4px 14px rgba(76,175,80,0.3);
+    }
+
+    .close-btn {
+      background: transparent;
+      border: 2px solid var(--yellow);
+      border-radius: 50px;
+      padding: 10px 28px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .close-btn:hover {
+      background: var(--yellow-mid);
+      transform: scale(1.03);
+    }
+
+    /* ── 플로팅 이모지 ── */
+    .float-emoji {
+      position: fixed;
+      font-size: 24px;
+      animation: floatUp var(--dur, 4s) ease-out var(--delay3, 0s) infinite;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 0.8; }
+      100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 400px) {
+      .back-title { font-size: 20px; }
+      .card-face { padding: 24px 18px; }
+      .photo-frame { width: 110px; height: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="stars-bg" id="starsContainer"></div>
+
+<div class="wrapper">
+  <p class="page-title">✨ 클릭해서 초대장을 열어보세요 ✨</p>
+
+  <div class="card-scene">
+    <div class="card-flip" id="cardFlip">
+
+      <!-- 앞면 -->
+      <div class="card-face card-front">
+        <div class="front-emojis">🎈 🎂 🎈</div>
+        <div class="front-title">
+          이준이의 생일파티에<br><span>초대합니다</span> 🎉
+        </div>
+        <p class="front-hint">눌러서 초대장 열기</p>
+        <button class="open-btn" onclick="openCard()">🎁 열어보세요 🎁</button>
+        <div class="front-bottom-emojis">🎁 ✨ 🦄 🌈 🎁</div>
+      </div>
+
+      <!-- 뒷면 -->
+      <div class="card-face card-back" id="cardBack">
+
+        <!-- 헤더 -->
+        <div class="back-header">
+          <div class="back-emojis">🎂 🎉 🎈</div>
+          <div class="back-title">이준이의 생일파티에<br>초대합니다!</div>
+          <div class="back-date-loc">
+            <span>📅 2026년 5월 30일</span>
+            &nbsp;|&nbsp;
+            <span>📍 원통</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 사진 -->
+        <div class="photo-section">
+          <div class="photo-frame">
+            <img src="junho.jpg" alt="이준이" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:50px;\'>🧒</div>'">
+          </div>
+          <p class="photo-caption">주인공 이준 ⭐</p>
+        </div>
+
+        <!-- 뮤직 플레이어 -->
+        <div class="music-bar" id="musicBar" onclick="toggleMusic()">
+          <span class="note">🎵</span>
+          <span class="music-label" id="musicLabel">생일 축하 노래 재생 중</span>
+          <div class="play-indicator" id="playIndicator">
+            <span style="--d2:0.6s;--delay2:0s;height:8px"></span>
+            <span style="--d2:0.8s;--delay2:0.1s;height:14px"></span>
+            <span style="--d2:0.5s;--delay2:0.2s;height:6px"></span>
+            <span style="--d2:0.9s;--delay2:0.05s;height:12px"></span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 일정 -->
+        <div class="schedule-section">
+          <div class="section-label">⏰ 당일 일정</div>
+          <div class="timeline">
+
+            <div class="tl-item">
+              <div class="tl-icon game">🎮</div>
+              <div class="tl-content">
+                <div class="tl-time">오전 10:00 – 12:00</div>
+                <div class="tl-title">보드게임 타임 🕹️</div>
+                <div class="tl-desc">
+                  청년커뮤니티센터 <b>(인솔: 이준 아빠)</b><br>
+                  🍔 간식: 수제 햄버거
+                </div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-icon food">🍽️</div>
+              <div class="tl-content">
+                <div class="tl-time">12:00 – 13:00</div>
+                <div class="tl-title">점심 식사 🥢</div>
+                <div class="tl-desc">원통으로 이동 후 함께 식사</div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-icon walk">🌈</div>
+              <div class="tl-content">
+                <div class="tl-time">13:00 – 14:00</div>
+                <div class="tl-title">원통 탐험 코스 🥾</div>
+                <div class="tl-desc">
+                  🍦 무인 아이스크림 가게&nbsp;·&nbsp;📸 인생네컷
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 태그 -->
+        <div class="tags">
+          <div class="tag">📅 5월 30일</div>
+          <div class="tag">📍 원통 일대</div>
+          <div class="tag">⏰ 오전 10시 집합</div>
+        </div>
+
+        <!-- 캘린더 추가 -->
+        <a class="cal-btn"
+           href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%82+%EC%9D%B4%EC%A4%80%EC%9D%B4+%EC%83%9D%EC%9D%BC%ED%8C%8C%ED%8B%B0&dates=20260530T010000Z%2F20260530T050000Z&details=10%3A00+%EB%B3%B4%EB%93%9C%EA%B2%8C%EC%9E%84+%ED%83%80%EC%9E%84+%28%EC%B2%AD%EB%85%84%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0%EC%84%BC%ED%84%B0%29%0A12%3A00+%EC%A0%90%EC%8B%AC+%EC%8B%9D%EC%82%AC%0A13%3A00+%EC%9B%90%ED%86%B5+%ED%83%90%ED%97%98+%EC%BD%94%EC%8A%A4&location=%EC%9B%90%ED%86%B5"
+           target="_blank" rel="noopener">
+          📅 Google 캘린더에 추가
+        </a>
+
+        <!-- 메시지 -->
+        <div class="message-box">
+          <div class="message-heart">🧡</div>
+          <p class="message-text">
+            <strong>이준이</strong>와 함께하는 특별한 하루,<br>꼭 함께해 주세요!
+          </p>
+        </div>
+
+        <button class="close-btn" onclick="closeCard()">← 초대장 닫기</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  /* ── 별 생성 ── */
+  const colors = ['#FFD600','#FF6B9D','#4FC3F7','#69F0AE','#CE93D8','#FF8F00'];
+  const starsContainer = document.getElementById('starsContainer');
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 6 + 3;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --d:${(Math.random()*3+2).toFixed(1)}s;
+      --delay:${(Math.random()*4).toFixed(1)}s;
+    `;
+    starsContainer.appendChild(s);
+  }
+
+  /* ── 카드 오픈 ── */
+  let isOpen = false;
+  function openCard() {
+    isOpen = true;
+    document.getElementById('cardFlip').classList.add('open');
+    startConfetti();
+    spawnFloatEmojis();
+    tryPlayMusic();
+  }
+
+  function closeCard() {
+    isOpen = false;
+    document.getElementById('cardFlip').classList.remove('open');
+    stopConfetti();
+    removeFloatEmojis();
+  }
+
+  /* ── 뮤직 (Web Audio API - Happy Birthday 멜로디) ── */
+  let musicPlaying = false;
+  let audioCtx = null;
+  let loopTimeout = null;
+  let activeNodes = [];
+
+  const NOTE = { G4:392, A4:440, B4:494, C5:523, D5:587, E5:659, F5:698, G5:784 };
+  const BPM = 108;
+  const B = 60 / BPM; // 1박자 길이(초)
+
+  // Happy Birthday 멜로디: [음, 박자]
+  const MELODY = [
+    ['G4',.75],['G4',.25],['A4',1],['G4',1],['C5',1],['B4',2],
+    ['G4',.75],['G4',.25],['A4',1],['G4',1],['D5',1],['C5',2],
+    ['G4',.75],['G4',.25],['G5',1],['E5',1],['C5',1],['B4',1],['A4',2],
+    ['F5',.75],['F5',.25],['E5',1],['C5',1],['D5',1],['C5',2],
+  ];
+
+  function playMelody() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    activeNodes = [];
+    let t = audioCtx.currentTime + 0.05;
+    MELODY.forEach(([note, beats]) => {
+      const dur = beats * B;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = NOTE[note];
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+      osc.start(t); osc.stop(t + dur);
+      activeNodes.push(osc);
+      t += dur;
+    });
+    const total = MELODY.reduce((s,[,b]) => s + b, 0) * B * 1000;
+    loopTimeout = setTimeout(() => { if (musicPlaying) playMelody(); }, total + 300);
+  }
+
+  function stopMelody() {
+    clearTimeout(loopTimeout);
+    activeNodes.forEach(n => { try { n.stop(); } catch(e){} });
+    activeNodes = [];
+  }
+
+  function tryPlayMusic() {
+    musicPlaying = true;
+    playMelody();
+    updateMusicUI();
+  }
+
+  function toggleMusic() {
+    if (musicPlaying) {
+      stopMelody();
+      musicPlaying = false;
+    } else {
+      musicPlaying = true;
+      playMelody();
+    }
+    updateMusicUI();
+  }
+
+  function updateMusicUI() {
+    const label = document.getElementById('musicLabel');
+    const indicator = document.getElementById('playIndicator');
+    if (musicPlaying) {
+      label.textContent = '생일 축하 노래 재생 중';
+      indicator.classList.remove('paused');
+    } else {
+      label.textContent = '▶ 눌러서 음악 재생';
+      indicator.classList.add('paused');
+    }
+  }
+
+  /* ── 컨페티 ── */
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  let confettiParticles = [];
+  let animFrame = null;
+  let confettiActive = false;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x = Math.random() * canvas.width;
+      this.y = init ? Math.random() * canvas.height * 0.5 - canvas.height * 0.5 : -20;
+      this.size = Math.random() * 9 + 4;
+      this.color = colors[Math.floor(Math.random() * colors.length)];
+      this.speedY = Math.random() * 3 + 1.5;
+      this.speedX = (Math.random() - 0.5) * 2;
+      this.rotation = Math.random() * 360;
+      this.rotSpeed = (Math.random() - 0.5) * 6;
+      this.shape = Math.random() > 0.5 ? 'rect' : 'circle';
+    }
+    update() {
+      this.y += this.speedY;
+      this.x += this.speedX;
+      this.rotation += this.rotSpeed;
+      if (this.y > canvas.height + 20) this.reset(false);
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.rotation * Math.PI / 180);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = 0.85;
+      if (this.shape === 'rect') {
+        ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size * 0.5);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  function startConfetti() {
+    confettiActive = true;
+    canvas.classList.add('active');
+    confettiParticles = Array.from({ length: 120 }, () => new Particle());
+    function loop() {
+      if (!confettiActive) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiParticles.forEach(p => { p.update(); p.draw(); });
+      animFrame = requestAnimationFrame(loop);
+    }
+    loop();
+  }
+
+  function stopConfetti() {
+    confettiActive = false;
+    canvas.classList.remove('active');
+    cancelAnimationFrame(animFrame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  /* ── 플로팅 이모지 ── */
+  const floatSet = ['🎂','🎈','🎉','🎁','⭐','🌟','✨','🦄','🍰','🥳'];
+  let floatInterval = null;
+
+  function spawnFloatEmojis() {
+    floatInterval = setInterval(() => {
+      if (!isOpen) return;
+      const el = document.createElement('div');
+      el.className = 'float-emoji';
+      el.textContent = floatSet[Math.floor(Math.random() * floatSet.length)];
+      el.style.cssText = `
+        left:${Math.random() * 90 + 5}%;
+        bottom:-40px;
+        --dur:${(Math.random() * 3 + 3).toFixed(1)}s;
+        --delay3:${(Math.random() * 2).toFixed(1)}s;
+        font-size:${Math.random() * 16 + 18}px;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 8000);
+    }, 600);
+  }
+
+  function removeFloatEmojis() {
+    clearInterval(floatInterval);
+    document.querySelectorAll('.float-emoji').forEach(el => el.remove());
+  }
+</script>
+</body>
+</html>
